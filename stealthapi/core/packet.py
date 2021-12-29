@@ -1,4 +1,4 @@
-"""TODO"""
+"""This module provides the Packet class."""
 
 __all__ = ['Packet', 'PacketParseError']
 
@@ -19,7 +19,7 @@ class PacketParseError(Exception):
 
 
 class Packet:
-    """TODO"""
+    """This class represents a data packet incoming from Stealth."""
 
     _cmd: int
     _size: int
@@ -35,27 +35,35 @@ class Packet:
 
     @property
     def cmd(self) -> int:
-        """TODO"""
         return self._cmd
 
     @property
     def size(self) -> int:
-        """TODO"""
         return self._size
 
     @property
     def data(self) -> bytes | bytearray:
-        """TODO"""
         return self._data
 
     @property
     def request_id(self) -> int | None:
-        """TODO"""
         return self._request_id
 
     @classmethod
     def unpack_from(cls, buffer: bytes | bytearray) -> 'Packet':
-        """TODO"""
+        """Try to parse packet from the given bytes sequence.
+
+        :Example:
+        >>> import struct
+        >>> from stealthapi.core.packet import Packet, PacketParseError
+        >>> buf = struct.pack('<IHHI', 8, 14, 0x12345678)  # GetSelfId response
+        >>> try: packet = Packet.unpack_from()
+        >>> except PacketParseError: pass
+
+        :param buffer: bytes sequence
+        :return: a Packet-class instance
+        :raises PacketParseError: if there is not enough bytes in the given data
+        """
         try:
             size, = _packet_size_struct.unpack_from(buffer)
             offset = _packet_size_struct.size
