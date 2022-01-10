@@ -26,11 +26,11 @@ HOST = 'localhost'  # stealth host
 PORT = 48602  # port provider server port
 
 ENDIAN: Literal['<', '>', '='] = '<'  # "<" for little endian, ">" for big
-STEALTH_CODEC = 'UTF-16LE'
+STEALTH_CODEC = 'UTF-16LE'  # unicode codec used by Stealth
 
-TIMER_RES = .005  # timer resolution (delay in loops)
+TIMER_RES = .005  # timer resolution (delay in loops, milliseconds)
 
-DEBUG: bool = False
+DEBUG = False  # set to True if you want to see debug messages
 
 
 def load_from_file(path: str) -> None:

@@ -5,7 +5,7 @@ __all__ = ['Bool', 'Char', 'Byte', 'UByte', 'Short', 'UShort', 'Int', 'UInt',
 
 import struct
 
-from ..config import ENDIAN, STEALTH_CODEC
+from stealthapi.config import ENDIAN, STEALTH_CODEC
 
 _unicode_length = len('c'.encode(STEALTH_CODEC))
 

@@ -1,12 +1,26 @@
 """This module provides the Packet class."""
 
-__all__ = ['Packet', 'PacketParseError']
+__all__ = ['IncomingPacketCmdEnum', 'Packet', 'PacketParseError']
 
+import enum
 import logging
 import struct
 
-from .commands import SC_METHOD_RESPONSE
-from ..config import DEBUG, ENDIAN
+from stealthapi.core.commands import \
+    SC_METHOD_RESPONSE, \
+    SC_PAUSE_SCRIPT, \
+    SC_EVENT_CALLBACK, \
+    SC_TERMINATE_SCRIPT
+from ..config import ENDIAN
+
+
+@enum.unique
+class IncomingPacketCmdEnum(enum.Enum):
+    RESPONSE = SC_METHOD_RESPONSE
+    PAUSE = SC_PAUSE_SCRIPT
+    EVENT = SC_EVENT_CALLBACK
+    TERMINATE = SC_TERMINATE_SCRIPT
+
 
 _packet_size_struct = struct.Struct(ENDIAN + 'I')
 _packet_cmd_struct = struct.Struct(ENDIAN + 'H')
@@ -21,20 +35,20 @@ class PacketParseError(Exception):
 class Packet:
     """This class represents a data packet incoming from Stealth."""
 
-    _cmd: int
+    _cmd: IncomingPacketCmdEnum
     _size: int
     _data: bytes | bytearray
     _request_id: int | None
 
-    def __init__(self, cmd: int, size: int, data: bytes | bytearray,
-                 request_id: int = None) -> None:
+    def __init__(self, cmd: IncomingPacketCmdEnum, size: int,
+                 data: bytes | bytearray, request_id: int = None) -> None:
         self._cmd = cmd
         self._size = size
         self._data = data
         self._request_id = request_id
 
     @property
-    def cmd(self) -> int:
+    def cmd(self) -> IncomingPacketCmdEnum:
         return self._cmd
 
     @property
@@ -64,24 +78,27 @@ class Packet:
         :return: a Packet-class instance
         :raises PacketParseError: if there is not enough bytes in the given data
         """
+        # try to parse packet size first
         try:
             size, = _packet_size_struct.unpack_from(buffer)
             offset = _packet_size_struct.size
             data = buffer[offset:offset + size]
         except struct.error:
             msg = f'Not enough data to unpack size: {len(buffer)}'
-            if DEBUG:
-                _logger.debug(msg)
+            _logger.debug(msg)
             raise PacketParseError(msg)
 
+        # parse header of the packet
         offset = 0
         request_id = None
         cmd, = _packet_cmd_struct.unpack_from(data)
         offset += _packet_cmd_struct.size
-        if cmd == SC_METHOD_RESPONSE:
+
+        # if method response - also parse request id
+        if cmd == IncomingPacketCmdEnum.RESPONSE:
             request_id = _packet_id_struct.unpack_from(data, offset)
             offset += _packet_id_struct.size
         return cls(cmd, size + 4, data[offset:], request_id)
 
 
-_logger = logging.Logger(Packet.__class__.__name__)
+_logger = logging.getLogger(Packet.__class__.__name__)
