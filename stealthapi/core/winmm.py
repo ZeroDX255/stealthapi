@@ -1,5 +1,6 @@
-""" This module provides tools for working with high precision Windows media
-timers. Got from https://stackoverflow.com/a/38488544
+"""
+This module provides tools for working with high precision Windows media timers.
+Got from https://stackoverflow.com/a/38488544
 """
 
 __all__ = ['set_timer_resolution']

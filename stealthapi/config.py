@@ -1,9 +1,10 @@
-"""This module loads the configuration file and provides all of its settings.
-If the file does not exist - the module will create a new one and fill it with
-the default values.
+"""
+This module loads the configuration file and provides all of its settings. If
+the file does not exist - the module will create a new one and fill it with the
+default values.
 
-All configuration values provides as names of this module. To add a new one, put
-it in the __all__ list.
+All configuration values provides as names of this module. To add a new one,
+put it in the __all__ list.
 
 :Example:
 >>> from stealthapi.config import DEBUG

@@ -1,5 +1,7 @@
-"""This package provides all the stuff needed to establish a connection with
-Stealth and exchange data through it."""
+"""
+This package provides all the stuff needed to establish a connection with
+Stealth and exchange data through it.
+"""
 
 import logging
 

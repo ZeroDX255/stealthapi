@@ -1,4 +1,5 @@
-"""This module provides all the tools needed to establish a connection with
+"""
+This module provides all the tools needed to establish a connection with
 Stealth.
 """
 
@@ -63,6 +64,7 @@ class StealthConnection(asyncio.Protocol):
 
     def connection_made(self, transport: asyncio.Transport) -> None:
         self._transport = transport
+        # TODO: send protocol version package
 
     def send(self, data: bytes | bytearray) -> None:
         """Send the given data to Stealth."""
@@ -87,7 +89,7 @@ class StealthConnection(asyncio.Protocol):
 
                 # event
                 case IncomingPacketCmdEnum.EVENT:
-                    pass  # TODO: events
+                    pass  # TODO: events handling
 
                 # pause script
                 case IncomingPacketCmdEnum.PAUSE:
