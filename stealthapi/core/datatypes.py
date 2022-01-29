@@ -26,7 +26,11 @@ class DataTypeMeta(abc.ABCMeta):
 
 
 class DataTypeBase(abc.ABC):
-    """TODO"""
+    """
+    A base class for all data type classes. It provides an interface used by
+    other tools. If you want to add a new data type, make sure it will match
+    interface of this class.
+    """
 
     _fmt: str
     _struct: struct.Struct
@@ -38,21 +42,32 @@ class DataTypeBase(abc.ABC):
     @property
     @abc.abstractmethod
     def value(self) -> object:
-        """TODO"""
+        """
+        User doesn't want to find a UInt instance where an integer instance
+        was expected. So this getter should return python data type for all
+        primitives.
+        """
+        raise NotImplemented
 
     @property
     @abc.abstractmethod
     def size(self) -> int:
-        """TODO"""
+        """Size in bytes of the current instance when it is packed."""
+        raise NotImplemented
 
     @classmethod
     @abc.abstractmethod
     def unpack_from(cls, buffer: bytes, offset: int = 0) -> object:
-        """TODO"""
+        """
+        Return an instance of datatype unpacked from the given buffer with the
+        given offset.
+        """
+        raise NotImplemented
 
     @abc.abstractmethod
     def pack(self) -> bytes:
-        """TODO"""
+        """Return a bytes object containing a value of the current instance."""
+        raise NotImplemented
 
 
 class _NumberBase(DataTypeBase, metaclass=DataTypeMeta):
