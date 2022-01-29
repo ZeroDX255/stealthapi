@@ -6,7 +6,7 @@ import asyncio
 import logging
 
 from stealthapi.config import TIMER_RES
-from stealthapi.core.connection_container import ConnectionsContainer
+from stealthapi.core.connection_container import get_connection
 from stealthapi.core.datatypes import AnyArgType
 from stealthapi.core.packet import packet_cmd_struct, packet_id_struct, \
     packet_size_struct
@@ -41,7 +41,7 @@ class ScriptMethod:
             data += t(v).pack()
 
         # make packet and send to Stealth
-        connection = await ConnectionsContainer.get_connection()
+        connection = await get_connection()
         request_id = connection.request_id
         packet = await self._form_packet(request_id, args)
         connection.send(packet)
