@@ -2,36 +2,51 @@
 
 __all__ = ['ScriptMethod']
 
-import asyncio
-import logging
-
 from stealthapi.config import TIMER_RES
 from stealthapi.core.connection_container import get_connection
 from stealthapi.core.datatypes import AnyArgType
 from stealthapi.core.packet import packet_cmd_struct, packet_id_struct, \
     packet_size_struct
-from stealthapi.core.utils import IS_WIN, get_event_loop
-from stealthapi.core.winmm import set_timer_resolution
+from stealthapi.core.utils import get_event_loop, sleep
 
-_AnyArgTypeType = type[AnyArgType]
+_AnyArgType = type[AnyArgType]
+_AnyArgArray = list[_AnyArgType] | tuple[_AnyArgType]
 
 
 class ScriptMethod:
-    """TODO"""
+    """A base class for all script functions.
+
+    :Example:
+        >>> # for AddToSystemJournal
+        >>> from stealthapi.core.scriptmethod import ScriptMethod
+        >>> from stealthapi.core.datatypes import *
+        >>> _add_to_system_journal = ScriptMethod(10, [Str], None)
+    """
 
     index: int
     restype: AnyArgType
-    argtypes: list[_AnyArgTypeType] | tuple[_AnyArgTypeType]
+    argtypes: _AnyArgArray
+
+    def __init__(self, index: int,
+                 argtypes: _AnyArgArray = None,
+                 restype: _AnyArgType = None) -> None:
+        self.index = index
+        self.argtypes = argtypes
+        self.restype = restype
 
     def __call__(self, *args: AnyArgType) -> AnyArgType:
-        """TODO"""
-
         loop = get_event_loop()
         loop.run_until_complete(self._call(args))
 
     async def _call(self, args: tuple[AnyArgType]) -> AnyArgType:
-        """TODO"""
-        # TODO: check pause script
+        """
+        Check pause, form packet, send it to Stealth, wait for response and
+        return it.
+        """
+        # check pause script
+        connection = await get_connection()
+        while connection.pause:
+            await sleep(TIMER_RES)
 
         # form packet
         data = bytes()
@@ -41,8 +56,7 @@ class ScriptMethod:
             data += t(v).pack()
 
         # make packet and send to Stealth
-        connection = await get_connection()
-        request_id = connection.request_id
+        request_id = connection.request_id if self.restype else 0
         packet = await self._form_packet(request_id, args)
         connection.send(packet)
 
@@ -53,18 +67,12 @@ class ScriptMethod:
                 result = self.restype.unpack_from(resp)
                 return result.value
             except KeyError:
-                if IS_WIN:
-                    with set_timer_resolution():
-                        await asyncio.sleep(TIMER_RES)
-                else:
-                    await asyncio.sleep(TIMER_RES)
+                await sleep(TIMER_RES)
 
-    async def _form_packet(self, request_id: int,
-                           args: tuple[AnyArgType]) -> bytes:
-        """TODO"""
+    async def _form_packet(self, req_id: int, args: tuple[AnyArgType]) -> bytes:
         # packet header
         index = packet_cmd_struct.pack(self.index)
-        request_id = packet_id_struct.pack(request_id)
+        request_id = packet_id_struct.pack(req_id)
 
         # method arguments
         packed_args = bytes()
@@ -76,6 +84,3 @@ class ScriptMethod:
         size = packet_size_struct.pack(len(data))  # packet size
 
         return size + data
-
-
-_logger = logging.getLogger(ScriptMethod.__class__.__name__)

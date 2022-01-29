@@ -1,8 +1,6 @@
 """This module provides some useful utilities."""
 
-__all__ = ['IS_WIN', 'get_connection_port',
-           'get_event_loop', 'format_packet']
-
+__all__ = ['sleep', 'get_connection_port', 'get_event_loop', 'format_packet']
 import asyncio
 import logging
 import platform
@@ -10,8 +8,19 @@ import struct
 from typing import Iterable
 
 from stealthapi.config import ENDIAN, HOST, PORT
+from stealthapi.core.winmm import set_timer_resolution
 
-IS_WIN = platform.system() == 'Windows'
+_IS_WIN = platform.system() == 'Windows'
+
+
+async def sleep(msec: int) -> None:
+    """Coroutine that completes after a given time (in milliseconds)."""
+    # if windows - use high precision timers
+    if _IS_WIN:
+        with set_timer_resolution():
+            await asyncio.sleep(msec)
+    else:
+        await asyncio.sleep(msec)
 
 
 async def get_connection_port() -> int:
