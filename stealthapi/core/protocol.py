@@ -26,15 +26,16 @@ class StealthConnection(asyncio.Protocol):
     _request_id: int  # a unique ident for every method returning result
     _pause: bool  # pause script
 
-    _methods_responses: dict[int, bytes]
+    methods_responses: dict[int, bytes]
 
     _logger: logging.Logger
 
     def __init__(self) -> None:
+        """Initiate class fields values."""
         self._buffer = bytes()
         self._pause = False
         self._request_id = 0
-        self._methods_responses = {}
+        self.methods_responses = {}
         # init logger
         thread = threading.current_thread()
         logger_name = f'{self.__class__.__name__}-{thread.ident}'
@@ -42,7 +43,7 @@ class StealthConnection(asyncio.Protocol):
         self._logger.debug('initialized')
 
     def __del__(self) -> None:
-        # close socket before destroy the current instance
+        """Close socket before destroy the current instance."""
         self._transport.close()
         while self._transport.is_closing():
             time.sleep(TIMER_RES)
@@ -63,6 +64,10 @@ class StealthConnection(asyncio.Protocol):
         return self._pause
 
     def connection_made(self, transport: asyncio.Transport) -> None:
+        """
+        Save the given transport to the class instance and send the language
+        version package.
+        """
         self._transport = transport
         # TODO: send protocol version package
 
@@ -85,7 +90,7 @@ class StealthConnection(asyncio.Protocol):
             match packet.cmd:
                 # method response
                 case IncomingPacketCmdEnum.SC_METHOD_RESPONSE:
-                    self._methods_responses[packet.request_id] = packet.data
+                    self.methods_responses[packet.request_id] = packet.data
 
                 # event
                 case IncomingPacketCmdEnum.EVENT:

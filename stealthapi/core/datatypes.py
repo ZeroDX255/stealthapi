@@ -1,9 +1,12 @@
 """This module provides basic data types."""
 
-__all__ = ['Bool', 'Char', 'Byte', 'UByte', 'Short', 'UShort', 'Int', 'UInt',
-           'Float', 'Double', 'Long', 'ULong', 'Str', 'Buffer', 'AnyArgType']
+__all__ = ['DataTypeMeta', 'DataTypeBase', 'Bool', 'Char', 'Byte', 'UByte',
+           'Short', 'UShort', 'Int', 'UInt', 'Float', 'Double', 'Long', 'ULong',
+           'Str', 'Buffer', 'DateTime', 'AnyArgType']
 
+import abc
 import struct
+import datetime
 
 from stealthapi.config import ENDIAN, STEALTH_CODEC
 
@@ -12,7 +15,7 @@ _unicode_length = len('c'.encode(STEALTH_CODEC))
 NumberType = int | float
 
 
-class _DataTypeMeta(type):
+class DataTypeMeta(abc.ABCMeta):
     """Metaclass creates a struct.Struct instance for data type classes."""
 
     def __new__(mcs, *args, **kwargs):
@@ -22,22 +25,47 @@ class _DataTypeMeta(type):
         return cls
 
 
-class _NumberBase:
-    """Base class for all numeric data types."""
+class DataTypeBase(abc.ABC):
+    """TODO"""
 
     _fmt: str
     _struct: struct.Struct
-    _value: NumberType
+    _value: object
 
-    def __init__(self, value: NumberType) -> None:
+    def __init__(self, value: object) -> None:
         self._value = value
+
+    @property
+    @abc.abstractmethod
+    def value(self) -> object:
+        """TODO"""
+
+    @property
+    @abc.abstractmethod
+    def size(self) -> int:
+        """TODO"""
+
+    @classmethod
+    @abc.abstractmethod
+    def unpack_from(cls, buffer: bytes, offset: int = 0) -> object:
+        """TODO"""
+
+    @abc.abstractmethod
+    def pack(self) -> bytes:
+        """TODO"""
+
+
+class _NumberBase(DataTypeBase, metaclass=DataTypeMeta):
+    """Base class for all numeric data types."""
+
+    _value: NumberType
 
     @property
     def value(self) -> NumberType:
         return self._value
 
     @property
-    def size(self):
+    def size(self) -> int:
         return self._struct.size
 
     @classmethod
@@ -52,7 +80,7 @@ class _NumberBase:
         return self._struct.pack(self._value)
 
 
-class Bool(_NumberBase, metaclass=_DataTypeMeta):
+class Bool(_NumberBase):
     _fmt = '?'
     _value: bool
 
@@ -61,61 +89,62 @@ class Bool(_NumberBase, metaclass=_DataTypeMeta):
         return self._value
 
 
-class Char(_NumberBase, metaclass=_DataTypeMeta):
+class Char(_NumberBase):
     _fmt = 'c'
 
 
-class Byte(_NumberBase, metaclass=_DataTypeMeta):
+class Byte(_NumberBase):
     _fmt = 'b'
 
 
-class UByte(_NumberBase, metaclass=_DataTypeMeta):
+class UByte(_NumberBase):
     _fmt = 'B'
 
 
-class Short(_NumberBase, metaclass=_DataTypeMeta):
+class Short(_NumberBase):
     _fmt = 'h'
 
 
-class UShort(_NumberBase, metaclass=_DataTypeMeta):
+class UShort(_NumberBase):
     _fmt = 'H'
 
 
-class Int(_NumberBase, metaclass=_DataTypeMeta):
+class Int(_NumberBase):
     _fmt = 'i'
 
 
-class UInt(_NumberBase, metaclass=_DataTypeMeta):
+class UInt(_NumberBase):
     _fmt = 'I'
 
 
-class Float(_NumberBase, metaclass=_DataTypeMeta):
+class Float(_NumberBase):
     _fmt = 'f'
 
 
-class Double(_NumberBase, metaclass=_DataTypeMeta):
+class Double(_NumberBase):
     _fmt = 'd'
 
 
-class Long(_NumberBase, metaclass=_DataTypeMeta):
+class Long(_NumberBase):
     _fmt = 'q'
 
 
-class ULong(_NumberBase, metaclass=_DataTypeMeta):
+class ULong(_NumberBase):
     _fmt = 'Q'
 
 
-class Str:
+class Str(DataTypeBase):
     _size_struct = struct.Struct(ENDIAN + 'I')  # uint for string size
     _value: str
-
-    def __init__(self, value: str) -> None:
-        self._value = value
 
     @property
     def _fmt(self) -> str:
         chars_len = len(self._value) * _unicode_length
         return self._size_struct.format + f'{chars_len}s'
+
+    @property
+    def size(self) -> int:
+        return struct.calcsize(self._fmt)
 
     @property
     def value(self) -> str:
@@ -132,8 +161,12 @@ class Str:
         return struct.pack(self._fmt, len(self._value) * _unicode_length, data)
 
 
-class Buffer(_NumberBase):
+class Buffer(DataTypeBase):
     _value: bytes
+
+    @property
+    def value(self) -> bytes:
+        return self._value
 
     @property
     def _fmt(self) -> str:
@@ -151,5 +184,30 @@ class Buffer(_NumberBase):
         return bytes(self._value)
 
 
+class DateTime(DataTypeBase, metaclass=DataTypeMeta):
+    _fmt = 'd'
+    _value: datetime.datetime
+    _delphi_epoch = datetime.datetime(1899, 12, 30)
+
+    @property
+    def value(self) -> datetime.datetime:
+        return self._value
+
+    @property
+    def size(self) -> int:
+        return self._struct.size
+
+    @classmethod
+    def unpack_from(cls, buffer: bytes, offset: int = 0) -> 'DateTime':
+        value, = cls._struct.unpack_from(buffer, offset)
+        return cls(cls._delphi_epoch + datetime.timedelta(days=value))
+
+    def pack(self) -> bytes:
+        delta = self._value - self._delphi_epoch
+        seconds = delta.seconds + delta.microseconds / 1_000_000
+        days = delta.days + seconds / 3600 / 24
+        return self._struct.pack(days)
+
+
 AnyArgType = Bool | Char | Byte | UByte | Short | UShort | Int | UInt | Float \
-             | Double | Long | ULong | Str | Buffer
+             | Double | Long | ULong | Str | Buffer | DateTime

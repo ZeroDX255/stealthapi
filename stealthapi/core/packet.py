@@ -1,6 +1,7 @@
 """This module provides the Packet class."""
 
-__all__ = ['IncomingPacketCmdEnum', 'Packet', 'PacketParseError']
+__all__ = ['IncomingPacketCmdEnum', 'Packet', 'PacketParseError',
+           'packet_size_struct', 'packet_cmd_struct', 'packet_id_struct']
 
 import enum
 import logging
@@ -11,7 +12,7 @@ from stealthapi.core.commands import \
     SC_PAUSE_SCRIPT, \
     SC_EVENT_CALLBACK, \
     SC_TERMINATE_SCRIPT
-from ..config import ENDIAN
+from stealthapi.config import ENDIAN
 
 
 @enum.unique
@@ -22,9 +23,9 @@ class IncomingPacketCmdEnum(enum.Enum):
     TERMINATE = SC_TERMINATE_SCRIPT
 
 
-_packet_size_struct = struct.Struct(ENDIAN + 'I')
-_packet_cmd_struct = struct.Struct(ENDIAN + 'H')
-_packet_id_struct = struct.Struct(ENDIAN + 'H')
+packet_size_struct = struct.Struct(ENDIAN + 'I')
+packet_cmd_struct = struct.Struct(ENDIAN + 'H')
+packet_id_struct = struct.Struct(ENDIAN + 'H')
 
 
 class PacketParseError(Exception):
@@ -80,8 +81,8 @@ class Packet:
         """
         # try to parse packet size first
         try:
-            size, = _packet_size_struct.unpack_from(buffer)
-            offset = _packet_size_struct.size
+            size, = packet_size_struct.unpack_from(buffer)
+            offset = packet_size_struct.size
             data = buffer[offset:offset + size]
         except struct.error:
             msg = f'Not enough data to unpack size: {len(buffer)}'
@@ -91,13 +92,13 @@ class Packet:
         # parse header of the packet
         offset = 0
         request_id = None
-        cmd, = _packet_cmd_struct.unpack_from(data)
-        offset += _packet_cmd_struct.size
+        cmd, = packet_cmd_struct.unpack_from(data)
+        offset += packet_cmd_struct.size
 
         # if method response - also parse request id
         if cmd == IncomingPacketCmdEnum.RESPONSE:
-            request_id = _packet_id_struct.unpack_from(data, offset)
-            offset += _packet_id_struct.size
+            request_id = packet_id_struct.unpack_from(data, offset)
+            offset += packet_id_struct.size
         return cls(cmd, size + 4, data[offset:], request_id)
 
 
