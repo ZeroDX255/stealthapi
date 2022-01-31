@@ -3,18 +3,28 @@ This module provides all the tools needed to establish a connection with
 Stealth.
 """
 
-__all__ = ['StealthConnection']
+__all__ = ['PROTOCOL_VERSION', 'StealthConnection']
 
 import asyncio
 import ctypes
 import logging
+import struct
 import threading
 import time
 
-from stealthapi.config import TIMER_RES
+from stealthapi.config import ENDIAN, TIMER_RES
+from stealthapi.core.commands import PYTHON_INDEX, SC_LANG_VERSION
 from stealthapi.core.packet import IncomingPacketCmdEnum, Packet, \
-    PacketParseError
+    PacketParseError, packet_size_struct
 from stealthapi.core.utils import format_packet
+
+PROTOCOL_VERSION = 2, 3, 0, 0
+
+# SC_LANG_VERSION packet
+_lang_ver_packet_data = struct.pack(ENDIAN + '2H5B', SC_LANG_VERSION, 0,
+                                    PYTHON_INDEX, *PROTOCOL_VERSION)
+_lang_ver_packet_size = packet_size_struct.pack(len(_lang_ver_packet_data))
+_lang_ver_packet = _lang_ver_packet_size + _lang_ver_packet_data
 
 
 class StealthConnection(asyncio.Protocol):
@@ -69,7 +79,7 @@ class StealthConnection(asyncio.Protocol):
         version package.
         """
         self._transport = transport
-        # TODO: send protocol version package
+        self.send(_lang_ver_packet)
 
     def send(self, data: bytes | bytearray) -> None:
         """Send the given data to Stealth."""
@@ -77,7 +87,7 @@ class StealthConnection(asyncio.Protocol):
         self._logger.debug(f'data sent: {format_packet(data)}')
 
     def data_received(self, data: bytes) -> None:
-        """TODO"""
+        """Handle the received data."""
         self._logger.debug(f'data received: {format_packet(data)}')
         # parse packet
         self._buffer += data

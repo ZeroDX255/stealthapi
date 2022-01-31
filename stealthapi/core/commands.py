@@ -1,5 +1,7 @@
 """This module provides script command values."""
 
+PYTHON_INDEX = 1
+
 SC_METHOD_RESPONSE = 1
 SC_TERMINATE_SCRIPT = 2
 SC_EVENT_CALLBACK = 3

@@ -5,8 +5,8 @@ __all__ = ['DataTypeMeta', 'DataTypeBase', 'Bool', 'Char', 'Byte', 'UByte',
            'Str', 'Buffer', 'DateTime', 'AnyArgType']
 
 import abc
-import struct
 import datetime
+import struct
 
 from stealthapi.config import ENDIAN, STEALTH_CODEC
 
