@@ -1,7 +1,4 @@
-"""
-This module provides all the tools needed to establish a connection with
-Stealth.
-"""
+"""This module provides class needed to exchange data with Stealth."""
 
 __all__ = ['PROTOCOL_VERSION', 'StealthConnection']
 
@@ -33,7 +30,7 @@ class StealthConnection(asyncio.Protocol):
     _transport: asyncio.Transport  # socket transport
     _buffer: bytes  # storage for data parts
 
-    _request_id: int  # a unique ident for every method returning result
+    _request_id: int  # a unique ident for every returning result method
     _pause: bool  # pause script
 
     methods_responses: dict[int, bytes]
