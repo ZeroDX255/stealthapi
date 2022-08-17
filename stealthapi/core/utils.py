@@ -43,7 +43,7 @@ async def get_connection_port() -> int:
 
     # send the request port data
     writer.write(get_port_packet)
-    logger.debug(f'data sent: {format_packet}')
+    logger.debug(f'data sent: {format_packet(get_port_packet)}')
 
     # receive port from Stealth
     _buffer = bytes()

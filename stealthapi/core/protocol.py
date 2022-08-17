@@ -15,7 +15,7 @@ from stealthapi.core.packet import IncomingPacketCmdEnum, Packet, \
     PacketParseError, packet_size_struct
 from stealthapi.core.utils import format_packet
 
-PROTOCOL_VERSION = 2, 3, 0, 0
+PROTOCOL_VERSION = 2, 4, 0, 0
 
 # SC_LANG_VERSION packet
 _lang_ver_packet_data = struct.pack(ENDIAN + '2H5B', SC_LANG_VERSION, 0,
