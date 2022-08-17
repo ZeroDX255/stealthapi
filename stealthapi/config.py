@@ -24,7 +24,7 @@ _SECTION_NAME = 'GENERAL'
 
 # default values
 HOST = 'localhost'  # stealth host
-PORT = 48602  # port provider server port
+PORT = 47602  # port provider server port
 
 ENDIAN: Literal['<', '>', '='] = '<'  # "<" for little endian, ">" for big
 STEALTH_CODEC = 'UTF-16LE'  # unicode codec used by Stealth
