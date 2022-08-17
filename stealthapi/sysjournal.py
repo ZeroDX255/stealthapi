@@ -11,15 +11,15 @@ clear() -> None
 
 __all__ = ['add', 'clear']
 
-from stealthapi.core.commands import SC_ADD_TO_SYSTEM_JOURNAL, \
-    SC_CLEAR_SYSTEM_JOURNAL
+from stealthapi.core.commands import ADD_TO_SYSTEM_JOURNAL, \
+    CLEAR_SYSTEM_JOURNAL
 from stealthapi.core.scriptmethod import ScriptMethod
 from stealthapi.core.datatypes import *
 
-_add_to_system_journal = ScriptMethod(SC_ADD_TO_SYSTEM_JOURNAL)
+_add_to_system_journal = ScriptMethod(ADD_TO_SYSTEM_JOURNAL)
 _add_to_system_journal.argtypes = [Str]
 
-_clear_system_journal = ScriptMethod(SC_CLEAR_SYSTEM_JOURNAL)
+_clear_system_journal = ScriptMethod(CLEAR_SYSTEM_JOURNAL)
 
 
 def add(*args: any, sep: str = ', ', **kwargs: any) -> None:

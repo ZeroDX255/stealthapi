@@ -10,7 +10,7 @@ import threading
 import time
 
 from stealthapi.config import ENDIAN, TIMER_RES
-from stealthapi.core.commands import PYTHON_INDEX, SC_LANG_VERSION
+from stealthapi.core.commands import PYTHON_LANG, LANG_VERSION
 from stealthapi.core.packet import IncomingPacketCmdEnum, Packet, \
     PacketParseError, packet_size_struct
 from stealthapi.core.utils import format_packet
@@ -18,8 +18,8 @@ from stealthapi.core.utils import format_packet
 PROTOCOL_VERSION = 2, 4, 0, 0
 
 # SC_LANG_VERSION packet
-_lang_ver_packet_data = struct.pack(ENDIAN + '2H5B', SC_LANG_VERSION, 0,
-                                    PYTHON_INDEX, *PROTOCOL_VERSION)
+_lang_ver_packet_data = struct.pack(ENDIAN + '2H5B', LANG_VERSION, 0,
+                                    PYTHON_LANG, *PROTOCOL_VERSION)
 _lang_ver_packet_size = packet_size_struct.pack(len(_lang_ver_packet_data))
 _lang_ver_packet = _lang_ver_packet_size + _lang_ver_packet_data
 
@@ -96,7 +96,7 @@ class StealthConnection(asyncio.Protocol):
 
             match packet.cmd:
                 # method response
-                case IncomingPacketCmdEnum.SC_METHOD_RESPONSE:
+                case IncomingPacketCmdEnum.RESPONSE:
                     self.methods_responses[packet.request_id] = packet.data
 
                 # event

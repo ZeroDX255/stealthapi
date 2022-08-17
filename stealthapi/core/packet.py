@@ -8,19 +8,19 @@ import logging
 import struct
 
 from stealthapi.core.commands import \
-    SC_METHOD_RESPONSE, \
-    SC_PAUSE_SCRIPT, \
-    SC_EVENT_CALLBACK, \
-    SC_TERMINATE_SCRIPT
+    METHOD_RESPONSE, \
+    PAUSE_SCRIPT, \
+    EVENT_PROC, \
+    TERMINATE_SCRIPT
 from stealthapi.config import ENDIAN
 
 
 @enum.unique
 class IncomingPacketCmdEnum(enum.Enum):
-    RESPONSE = SC_METHOD_RESPONSE
-    PAUSE = SC_PAUSE_SCRIPT
-    EVENT = SC_EVENT_CALLBACK
-    TERMINATE = SC_TERMINATE_SCRIPT
+    RESPONSE = METHOD_RESPONSE
+    PAUSE = PAUSE_SCRIPT
+    EVENT = EVENT_PROC
+    TERMINATE = TERMINATE_SCRIPT
 
 
 packet_size_struct = struct.Struct(ENDIAN + 'I')
