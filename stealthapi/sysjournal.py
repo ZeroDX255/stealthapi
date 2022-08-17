@@ -14,8 +14,11 @@ __all__ = ['add', 'clear']
 from stealthapi.core.commands import SC_ADD_TO_SYSTEM_JOURNAL, \
     SC_CLEAR_SYSTEM_JOURNAL
 from stealthapi.core.scriptmethod import ScriptMethod
+from stealthapi.core.datatypes import *
 
 _add_to_system_journal = ScriptMethod(SC_ADD_TO_SYSTEM_JOURNAL)
+_add_to_system_journal.argtypes = [Str]
+
 _clear_system_journal = ScriptMethod(SC_CLEAR_SYSTEM_JOURNAL)
 
 
@@ -26,7 +29,7 @@ def add(*args: any, sep: str = ', ', **kwargs: any) -> None:
     >>> from stealthapi import sysjournal
     >>> sysjournal.add('coordinates:', x=10, y=15, sep=' ')
 
-    :param args: arguments will be converted to string with str()-function
+    :param args: arguments will be converted to string with the str() function
     :param sep: separator will be placed between arguments
     :param kwargs: keyword arguments will be converted to `key=val` string
     :return:
@@ -37,7 +40,7 @@ def add(*args: any, sep: str = ', ', **kwargs: any) -> None:
 
 
 def clear() -> None:
-    """ Clear the Stealth system journal.
+    """Clear the Stealth system journal.
 
     :Example:
     >>> from stealthapi import sysjournal
